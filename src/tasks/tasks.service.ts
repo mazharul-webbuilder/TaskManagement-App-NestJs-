@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
-import { CreateTaskDto } from './dto/create-task-dto';
-import * as uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { GetTasksFilterDto } from "./dto/get-tasks-filter.dto";
 
 @Injectable()
 export class TasksService {
@@ -11,40 +12,49 @@ export class TasksService {
     return this.tasks;
   }
 
-  createTask(createTaskDto: CreateTaskDto): Task {
-    const { title, description } = createTaskDto;
+  getFilteredTasks(filterDto: GetTasksFilterDto): Task[]{
+    const {status, search} = filterDto
 
-    const task: Task = {
-      id: uuid.v1(),
-      title,
-      description,
-      status: TaskStatus.OPEN,
-    };
+    let tasks = this.getAllTasks()
 
-    this.tasks.push(task);
+    if (status){
+      tasks = tasks.filter(task => task.status === status)
+    }
+    if (search){
+      tasks = tasks.filter(task =>
+        task.title.includes(search) || task.description.includes(search))
+    }
 
-    return task;
+    return tasks;
   }
 
   getTaskById(id: string): Task {
     return this.tasks.find((task) => task.id === id);
   }
 
-  updateTaskStatus(status: string, id: string): Task {
-    const task = this.getTaskById(id);
+  createTask(createTaskDto: CreateTaskDto): Task {
+    const { title, description } = createTaskDto;
 
-    task.status = TaskStatus.IN_PROGRESS;
+    const task: Task = {
+      id: uuidv4(),
+      title,
+      description,
+      status: TaskStatus.OPEN,
+    };
+    this.tasks.push(task);
 
     return task;
   }
 
-  deleteTask(id: string): boolean {
-    const isFound: boolean | Task = this.getTaskById(id);
+  updateTask(id: string, status: TaskStatus): Task {
+    const task:Task = this.getTaskById(id);
 
-    if (isFound) {
-      this.tasks = this.tasks.filter((item) => item.id !== id);
-      return true
-    }
-    return false;
+    task.status = status;
+
+    return task;
+  }
+
+  deleteTask(id: string): void {
+    this.tasks = this.tasks.filter((task) => task.id !== id);
   }
 }
