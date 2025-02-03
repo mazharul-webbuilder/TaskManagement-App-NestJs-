@@ -7,6 +7,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: '',
   password: '',
   database: 'taskmanagement',
-  entities: [__dirname + '/../**/*.entity.{js,ts}'], // entity files are similar like laravel migration file
+  entities: [__dirname + '/../**/*.entity.{js,ts}'], // Like Laravel Model Class
   synchronize: true, // Auto-sync schema, useful for development
 };
