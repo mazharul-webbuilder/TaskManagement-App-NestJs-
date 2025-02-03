@@ -13,25 +13,36 @@ export class TaskRepository extends Repository<Task> {
   ) {
     super(taskRepo.target, taskRepo.manager, taskRepo.queryRunner);
   }
-  
-  
-  async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
-    const {status, search } = filterDto;
+
+
+  async getTasks(filterDto: GetTasksFilterDto): Promise<{ tasks: Task[], total: number }> {
+    const { status, search, page = 1, limit = 5 } = filterDto;
 
     const query = this.createQueryBuilder('task');
 
+    // Apply status filter
     if (status) {
-      query.andWhere('task.status = :status', {status: status});
+      query.andWhere('task.status = :status', { status });
     }
 
+    // Apply search filter
     if (search) {
-      query.andWhere('(task.title LIKE :search OR task.description LIKE :search)', {search: `%${search}%`});
+      query.andWhere('(task.title LIKE :search OR task.description LIKE :search)', { search: `%${search}%` });
     }
 
+    // Pagination: skip and take
+    query.skip((page - 1) * limit);  // skip records for current page
+    query.take(limit);  // take the number of records specified in limit
+
+    // Get the tasks
     const tasks = await query.getMany();
 
-    return tasks;
+    // Get total count of tasks (for pagination control on the frontend)
+    const total = await query.getCount();
+
+    return { tasks, total };
   }
+
 
   
 
