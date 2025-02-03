@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length } from "class-validator";
+import { IsNotEmpty, IsString, Length, Validate } from "class-validator";
 
 export class CreateTaskDto {
   @IsNotEmpty({ message: 'Title should not be empty' })
@@ -8,6 +8,8 @@ export class CreateTaskDto {
 
   @IsNotEmpty({ message: 'Description should not be empty' })
   @IsString({ message: 'Description must be a string' })
-  @Length(10, 500, { message: 'Description must be between 10 and 500 characters' })
+  @Length(10, 500, {
+    message: 'Description must be between 10 and 500 characters',
+  })
   description: string;
 }
