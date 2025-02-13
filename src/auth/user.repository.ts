@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+  InternalServerErrorException, UnauthorizedException
+} from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthCredentialsDto } from './dto/auth.credentials.dto';
 
@@ -41,8 +41,11 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
-    const {username, password} = authCredentialsDto;
+  /***
+   Let User Login Functionality Here.
+   */
+  async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string|null>  {
+    const { username, password } = authCredentialsDto;
 
     const user = await this.findOne({ where: { username } });
 
@@ -51,7 +54,6 @@ export class UserRepository extends Repository<User> {
     } else {
       return null;
     }
-
   }
 
   private async hashPassword(password: string, salt: string): Promise<string> {
