@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { TaskStatus } from "./task-status.enum";
+import { User } from "../auth/user.entity";
 
 /*
 Entity  is similar to Laravel Eloquent Model class.
@@ -19,4 +20,12 @@ export class Task extends BaseEntity {
 
   @Column()
   status: TaskStatus;
+
+  @ManyToOne(type => User, user => user.tasks, {
+    eager: false, // only one side of the relationship can be eager
+  })
+  user: User;
+
+  @Column()
+  userId: number;
 }

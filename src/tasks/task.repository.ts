@@ -5,6 +5,7 @@ import { Task } from './task.entity';
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { TaskStatus } from "./task-status.enum";
 import { GetTasksFilterDto } from "./dto/get-tasks-filter.dto";
+import { User } from "../auth/user.entity";
 
 @Injectable()
 export class TaskRepository extends Repository<Task> {
@@ -15,10 +16,12 @@ export class TaskRepository extends Repository<Task> {
   }
 
 
-  async getTasks(filterDto: GetTasksFilterDto): Promise<{ tasks: Task[], total: number }> {
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<{ tasks: Task[], total: number }> {
     const { status, search, page = 1, limit = 5 } = filterDto;
 
     const query = this.createQueryBuilder('task');
+
+    query.where('task.userId = :userId', { userId: user.id });  // Only fetch tasks for the current user
 
     // Apply status filter
     if (status) {
@@ -43,19 +46,18 @@ export class TaskRepository extends Repository<Task> {
     return { tasks, total };
   }
 
-
-  
-
   // This repository provides custom methods for interacting with the Task entity,
   // extending the base TypeORM Repository class and adding application-specific logic.
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+  async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
     const { title, description } = createTaskDto;
     const task: Task = this.create({
       title,
       description,
       status: TaskStatus.OPEN,
     });
+    task.user = user;  // Associate the task with the user who created it
     await this.save(task);
+    delete task.user;
     return task;
   }
 }

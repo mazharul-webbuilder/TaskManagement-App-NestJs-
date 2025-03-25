@@ -5,6 +5,7 @@ import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { TaskStatus } from './task-status.enum';
 import { GetTasksFilterDto } from "./dto/get-tasks-filter.dto";
+import { User } from "../auth/user.entity";
 
 @Injectable()
 export class TasksService {
@@ -13,13 +14,15 @@ export class TasksService {
     private taskRepository: TaskRepository,
   ) {}
 
-  async getTasks(filterDto: GetTasksFilterDto): Promise<{ tasks: Task[]; total: number }>{
-    return await this.taskRepository.getTasks(filterDto);
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<{ tasks: Task[]; total: number }>{
+    return await this.taskRepository.getTasks(filterDto, user);
 
   }
 
-  async getTaskById(id: number): Promise<Task> {
-    const found: Task = await this.taskRepository.findOneBy({ id });
+  async getTaskById(id: number, user: User): Promise<Task> {
+    const found: Task = await this.taskRepository.findOne({
+      where: { id, userId: user.id },
+    })
 
     if (!found) {
       throw new NotFoundException(`Task with id ${id} not found`);
@@ -27,12 +30,12 @@ export class TasksService {
     return found;
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
-    return await this.taskRepository.createTask(createTaskDto);
+  async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
+    return await this.taskRepository.createTask(createTaskDto, user);
   }
 
-  async updateTask(id: number, status: TaskStatus): Promise<Task> {
-    const task: Task = await this.getTaskById(id);
+  async updateTask(id: number, status: TaskStatus, user: User): Promise<Task> {
+    const task: Task = await this.getTaskById(id, user);
     task.status = status;
     await task.save();
     return task;
