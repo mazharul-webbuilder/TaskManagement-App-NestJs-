@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import * as bcrypt from 'bcrypt';
+import { Task } from "../tasks/task.entity";
 
 @Entity()
 @Unique(['username'])
@@ -15,6 +16,12 @@ export class User extends BaseEntity{
 
   @Column()
   salt: string;
+
+  @OneToMany(type => Task,task => task.user, {
+    eager: true,
+    cascade: true,
+  } )
+  tasks: Task[]
 
   /***
    * Method to hash the password before saving it to the database
