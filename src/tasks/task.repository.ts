@@ -16,10 +16,12 @@ export class TaskRepository extends Repository<Task> {
   }
 
 
-  async getTasks(filterDto: GetTasksFilterDto): Promise<{ tasks: Task[], total: number }> {
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<{ tasks: Task[], total: number }> {
     const { status, search, page = 1, limit = 5 } = filterDto;
 
     const query = this.createQueryBuilder('task');
+
+    query.where('task.userId = :userId', { userId: user.id });  // Only fetch tasks for the current user
 
     // Apply status filter
     if (status) {

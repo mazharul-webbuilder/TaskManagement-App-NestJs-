@@ -25,4 +25,7 @@ export class Task extends BaseEntity {
     eager: false, // only one side of the relationship can be eager
   })
   user: User;
+
+  @Column()
+  userId: number;
 }
